@@ -511,42 +511,33 @@ def update_graph_nodes():
     red_nodes.clear()
     blue_nodes.clear()
     
-    # For red team
-    for y in range(HEIGHT):
-        for x in range(WIDTH):
-            if red_trail_field[y][x] > NODE_THRESHOLD:
-                # Check if it's a local maximum within NODE_RADIUS
-                is_max = True
-                for dy in range(-NODE_RADIUS, NODE_RADIUS+1):
-                    for dx in range(-NODE_RADIUS, NODE_RADIUS+1):
-                        ny = y + dy
-                        nx = x + dx
-                        if 0 <= ny < HEIGHT and 0 <= nx < WIDTH:
-                            if red_trail_field[ny][nx] > red_trail_field[y][x]:
-                                is_max = False
-                                break
-                    if not is_max:
-                        break
-                if is_max:
-                    red_nodes.append(GraphNode(x, y, RED))
+    # For red team (vectorized candidate pre-filtering)
+    red_candidates = np.argwhere(red_trail_field > NODE_THRESHOLD)
+    for y, x in red_candidates:
+        # Check if it's a local maximum within NODE_RADIUS
+        y_min = max(0, y - NODE_RADIUS)
+        y_max = min(HEIGHT, y + NODE_RADIUS + 1)
+        x_min = max(0, x - NODE_RADIUS)
+        x_max = min(WIDTH, x + NODE_RADIUS + 1)
+        
+        val = red_trail_field[y][x]
+        neighborhood = red_trail_field[y_min:y_max, x_min:x_max]
+        if val >= np.max(neighborhood):
+            red_nodes.append(GraphNode(x, y, RED))
     
-    # For blue team
-    for y in range(HEIGHT):
-        for x in range(WIDTH):
-            if blue_trail_field[y][x] > NODE_THRESHOLD:
-                is_max = True
-                for dy in range(-NODE_RADIUS, NODE_RADIUS+1):
-                    for dx in range(-NODE_RADIUS, NODE_RADIUS+1):
-                        ny = y + dy
-                        nx = x + dx
-                        if 0 <= ny < HEIGHT and 0 <= nx < WIDTH:
-                            if blue_trail_field[ny][nx] > blue_trail_field[y][x]:
-                                is_max = False
-                                break
-                    if not is_max:
-                        break
-                if is_max:
-                    blue_nodes.append(GraphNode(x, y, BLUE))
+    # For blue team (vectorized candidate pre-filtering)
+    blue_candidates = np.argwhere(blue_trail_field > NODE_THRESHOLD)
+    for y, x in blue_candidates:
+        # Check if it's a local maximum within NODE_RADIUS
+        y_min = max(0, y - NODE_RADIUS)
+        y_max = min(HEIGHT, y + NODE_RADIUS + 1)
+        x_min = max(0, x - NODE_RADIUS)
+        x_max = min(WIDTH, x + NODE_RADIUS + 1)
+        
+        val = blue_trail_field[y][x]
+        neighborhood = blue_trail_field[y_min:y_max, x_min:x_max]
+        if val >= np.max(neighborhood):
+            blue_nodes.append(GraphNode(x, y, BLUE))
 
 def update_graph_edges():
     global red_edges, blue_edges, frame_counter
@@ -699,13 +690,13 @@ def apply_graph_warfare():
         if a.team == RED:
             y_min, y_max = max(0, a.y - damage_radius), min(HEIGHT, a.y + damage_radius + 1)
             x_min, x_max = max(0, a.x - damage_radius), min(WIDTH, a.x + damage_radius + 1)
-            mask = blue_trail_field[y_min:y_max, x_min:x_max] > ENEMY_PRESSURE_THRESHOLD
-            blue_trail_field[y_min:y_max, x_min:x_max][mask] -= DAMAGE_AMOUNT
+            slice_view = blue_trail_field[y_min:y_max, x_min:x_max]
+            slice_view[slice_view > ENEMY_PRESSURE_THRESHOLD] -= DAMAGE_AMOUNT
         elif a.team == BLUE:
             y_min, y_max = max(0, a.y - damage_radius), min(HEIGHT, a.y + damage_radius + 1)
             x_min, x_max = max(0, a.x - damage_radius), min(WIDTH, a.x + damage_radius + 1)
-            mask = red_trail_field[y_min:y_max, x_min:x_max] > ENEMY_PRESSURE_THRESHOLD
-            red_trail_field[y_min:y_max, x_min:x_max][mask] -= DAMAGE_AMOUNT
+            slice_view = red_trail_field[y_min:y_max, x_min:x_max]
+            slice_view[slice_view > ENEMY_PRESSURE_THRESHOLD] -= DAMAGE_AMOUNT
 
 def update_simulation_metrics():
     global red_nodes, blue_nodes, red_edges, blue_edges, trail_field, grid, flag_holder
