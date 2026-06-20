@@ -1,0 +1,8 @@
+WIDTH = 120
+HEIGHT = 120
+CELL = 5
+FPS = 60
+
+EMPTY = 0
+RED = 1
+BLUE = 2

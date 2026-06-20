@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+screenshots/
+data/
+*.mp4
+*.backup
