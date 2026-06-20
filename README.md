@@ -74,13 +74,43 @@ Screenshots are saved as PNG files in the `screenshots/` directory with timestam
 - Flag respawn delay is set to 500 frames (~8.3 seconds at 60 FPS).
 - Automatic screenshot and data interval is set to 1800 frames (~30 seconds at 60 FPS).
 
-## Future Ideas
+## 🚀 The Tiny AMPS Latency Challenge: Can You Beat Zero Lag?
 
-- Save data automatically after each run or at regular intervals.
-- Export data in multiple formats (JSON, Excel).
-- Add more brain types or allow custom brain scripts.
-- Implement team-based scoring or victory conditions.
-- Add parameters to brains for evolutionary tuning.
+We have integrated this simulation with the **Tiny AMPS Broker** to showcase the impact of decision latency on collective intelligence:
+* **RED Team (Tiny AMPS)**: Ingests telemetry and command center decisions with **0-frame latency** (instant).
+* **BLUE Team (Legacy)**: Suffers from a **150-frame latency (2.5 seconds)** due to traditional client-side queue ingestion bottlenecking (bufferbloat).
+
+Under standard reactive strategies, RED completely dominates. **But can a smarter brain overcome the lag?**
+
+We challenge you to write a custom brain for the BLUE team that uses **proactive, predictive, or structural strategies** to beat the zero-latency RED team.
+
+### How to Participate and Build Your Brain:
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Wadim-cloud/swarmsim.git
+   cd swarmsim
+   ```
+
+2. **Implement Your Brain Class**:
+   Open `swarm.py` and write a new class (e.g., `AnticipatoryBrain` or `StigmergicHighwayBrain`). It must implement a `direction(self, agent, grid)` method returning a step coordinate direction tuple `(dx, dy)` chosen from `[(1,0), (-1,0), (0,1), (0,-1)]`:
+   ```python
+   class AnticipatoryBrain:
+       def direction(self, agent, grid):
+           # Access agent.x, agent.y, agent.team
+           # Access grid (representing territory colors)
+           # Return (dx, dy)
+           pass
+   ```
+
+3. **Register Your Brain**:
+   Add your brain class to the `BRAIN_CLASSES` list in `swarm.py`:
+   ```python
+   BRAIN_CLASSES = [ChaosBrain, SwarmBrain, ZMQBrainLike, SunflowerBrain, TacticalChaosBrain, AnticipatoryBrain]
+   ```
+
+4. **Test Your Strategy**:
+   Run the simulation and select your brain for the BLUE team (press `M` in the GUI to cycle brains, or edit the default index). See if your proactive positioning, decoy traps, or trail highway structures can break RED's winning streak!
 
 ---
-*Built with pygame and numpy for exploring swarm intelligence dynamics.*
+*Built with pygame, numpy, and Tiny AMPS for exploring real-time high-frequency swarm telemetry.*
